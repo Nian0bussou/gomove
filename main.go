@@ -1,26 +1,21 @@
 package main
 
 import (
-	//"bufio"
 	"fmt"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
-	"os/exec"
-	"sync"
-
-	//"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
-	//"golang.org/x/term"
+	"sync"
 )
 
-// var _n uint = 0
-var _count uint = 0
-var _succeed uint = 0
-var _failed uint = 0
+var Count___ uint = 0
+var Succeed_ uint = 0
+var Failed__ uint = 0
 
 func main() {
 
@@ -61,9 +56,9 @@ func main() {
 	wg.Wait()
 
 	fmt.Println("finished")
-	println("count : ", _count)
-	println("succe : ", _succeed)
-	println("faile : ", _failed)
+	println("count : ", Count___)
+	println("succe : ", Succeed_)
+	println("faile : ", Failed__)
 
 	if osasdf == "windows" {
 		exec.Command("explorer.exe", "D:\\grapper\\").Run()
@@ -152,15 +147,17 @@ func checkThenMove(dir, path string) {
 }
 
 func moveFile(source, dest, name string) error {
+	Count___++
 	fileName := filepath.Base(source)
 	destpath := filepath.Join(dest, fileName)
 	err := os.Rename(source, destpath)
 	if err != nil {
+		Failed__++
+		errorMaxxing(err.Error())
 		return err
 	}
-
+	Succeed_++
 	logmaxxing(source, dest, name)
-
 	return nil
 
 }
@@ -173,21 +170,17 @@ func logmaxxing(source, file_path, name string) {
 		"green":   "\033[32m",
 		"cyan":    "\033[36m",
 		"magenta": "\033[35m",
-		"purple":  "\033[35;1m", // Bright Purple
+		"purple":  "\033[35;1m",
 		"grey":    "\033[37m",
 		"yellow":  "\033[33m",
-		"reset":   "\033[0m",
+		"reset":   "\033[0m", // aka white
 	}
 
 	c := colors[name]
-
 	tab := "\t"
-
 	parentDir := filepath.Join(filepath.Base(filepath.Dir(source)), filepath.Base(source))
-
 	padpar := fmt.Sprintf("%-80s", parentDir)
-
-	fmt.Println(tab, c, tab, padpar /*source*/, "=>", tab, file_path, reset)
+	fmt.Println(tab, c, tab, padpar , "=>", tab, file_path, reset)
 }
 
 func get_folders(path string) []string {
@@ -245,4 +238,8 @@ func getFileSize(filename string) float64 {
 		return 0
 	}
 	return float64(fileInfo.Size()) / (1024 * 1024 * 1024)
+}
+
+func errorMaxxing(str string) {
+	fmt.Println("ERROR: ----------------------------------------------------------------------------------------------- ", str)
 }
