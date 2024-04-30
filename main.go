@@ -13,15 +13,17 @@ import (
 	"sync"
 )
 
-var Count___ uint = 0
-var Succeed_ uint = 0
-var Failed__ uint = 0
+var (
+	Count___ uint
+	Succeed_ uint
+	Failed__ uint
+)
 
 func main() {
 
-	osasdf := runtime.GOOS
+	osName := runtime.GOOS
 	path := "D:/grapper"
-	if osasdf == "linux" {
+	if osName == "linux" {
 		path = "/mnt/d/grapper/"
 	}
 	fmt.Println(path)
@@ -36,6 +38,10 @@ func main() {
 	}
 
 	subs := get_folders(path)
+	if subs == nil {
+		println("could not get directories")
+		return
+	}
 
 	println("_______________")
 
@@ -60,7 +66,7 @@ func main() {
 	println("succe : ", Succeed_)
 	println("faile : ", Failed__)
 
-	if osasdf == "windows" {
+	if osName == "windows" {
 		exec.Command("explorer.exe", "D:\\grapper\\").Run()
 	}
 }
@@ -78,14 +84,15 @@ func move_stuff(dir string) {
 }
 
 func checkThenMove(dir, path string) {
+
 	dest_wall := filepath.Join(dir, "wall")
 	dest_othe := filepath.Join(dir, "other")
 	dest_squa := filepath.Join(dir, "square")
 	dest_badq := filepath.Join(dir, "bad_quality")
-	dest_vide := filepath.Join(dir, "video")
 	dest_bad_land := filepath.Join(dest_badq, "l")
 	dest_bad_squa := filepath.Join(dest_badq, "s")
 	dest_bad_port := filepath.Join(dest_badq, "p")
+	dest_vide := filepath.Join(dir, "video")
 	do(dest_wall)
 	do(dest_othe)
 	do(dest_squa)
@@ -111,15 +118,11 @@ func checkThenMove(dir, path string) {
 	h := b.Dy()
 	ar := float32(w) / float32(h)
 
-	// t := "\t"
-	// println(w, t, h, t, ar)
-
 	ext := filepath.Ext(path)
-	switch ext {
-	case ".mp4":
-		moveFile(path, dest_vide, "yellow")
-	default:
 
+	if ext == ".mp4" {
+		moveFile(path, dest_vide, "yellow")
+	} else {
 		if w >= 1080 && h >= 1080 {
 			if ar > 1 {
 				// wallp
@@ -144,6 +147,7 @@ func checkThenMove(dir, path string) {
 			}
 		}
 	}
+
 }
 
 func moveFile(source, dest, name string) error {
@@ -180,7 +184,7 @@ func logmaxxing(source, file_path, name string) {
 	tab := "\t"
 	parentDir := filepath.Join(filepath.Base(filepath.Dir(source)), filepath.Base(source))
 	padpar := fmt.Sprintf("%-80s", parentDir)
-	fmt.Println(tab, c, tab, padpar , "=>", tab, file_path, reset)
+	fmt.Println(tab, c, tab, padpar, "=>", tab, file_path, reset)
 }
 
 func get_folders(path string) []string {
