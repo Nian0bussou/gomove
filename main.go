@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"golang.org/x/term"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
@@ -14,21 +13,27 @@ import (
 	"runtime"
 	"sync"
 	"time"
+
+	"golang.org/x/term"
 )
 
 const (
-	land_s string = "━"
-	squa_s string = "■"
-	port_s string = "┃"
-	vide_s string = "▶"
+	landscape_char string = "━"
+	square_char    string = "■"
+	portrait_char  string = "┃"
+	video_char     string = "▶"
 )
 
 var (
-	choice  uint
-	Count   uint
-	Succeed uint
-	Failed  uint
-	res     string = "\033[0m"
+	Choice          uint
+	Count           uint
+	Succeed         uint
+	Failed          uint
+	Landscape_count uint
+	Portrait_count  uint
+	Square___count  uint
+	Video____count  uint
+	reset_white     string = "\033[0m"
 
 	colors = map[string]string{
 		"red":     "\033[31m",
@@ -40,31 +45,41 @@ var (
 		"grey":    "\033[37m",
 		"yellow":  "\033[33m",
 	}
-	specia = map[string]string{
-		"land":     land_s,
-		"square":   squa_s,
-		"portrait": port_s,
-		"video":    vide_s,
+	special_char = map[string]string{
+		"land":     landscape_char,
+		"square":   square_char,
+		"portrait": portrait_char,
+		"video":    video_char,
+	}
+
+	countTypes = map[string]*uint{
+		landscape_char: &Landscape_count,
+		square_char:    &Square___count,
+		portrait_char:  &Portrait_count,
+		video_char:     &Video____count,
 	}
 )
 
 func main() {
-	defer trackTime()()
+	defer timeminmaxxing()()
 
 	//////////////////////////////////////////////////////////////////////////////
+	// determining what wheter to scramble or to mangle
 
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case "1":
-			choice = 1
+			Choice = 1
 		default:
 			log.Fatal("invalid option")
 		}
 	} else {
-		choice = 0
+		Choice = 0
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
+	// tak youw path & get the wuck out
+
 	osName := runtime.GOOS
 	path := "D:/grapper"
 
@@ -76,6 +91,7 @@ func main() {
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
+	// get the fowdews
 
 	subs := get_folders(path)
 	if subs == nil {
@@ -101,7 +117,7 @@ func main() {
 		wg.Add(1)
 		go func(item string) {
 			defer wg.Done()
-			switch choice {
+			switch Choice {
 			case 0:
 				move_stuff(item)
 			case 1:
@@ -114,16 +130,26 @@ func main() {
 	wg.Wait()
 
 	//////////////////////////////////////////////////////////////////////////////
+
 	for i := 0; i < width; i++ {
 		print("_")
 	}
-	println("finished")
-	println("count : ", Count)
-	println("succe : ", Succeed)
-	println("faile : ", Failed)
+	println("Finished,")
+	println("count     : ", Count)
+	println("succeeded : ", Succeed)
+	println("failed    : ", Failed)
+	println("portrait  : ", Portrait_count)
+	println("landscape : ", Landscape_count)
+	println("square    : ", Square___count)
+	println("video     : ", Video____count)
+
+	removeTmp(path)
+
+	///////////////////////////////////////////////////////////////////////////////
 	if osName == "windows" {
 		exec.Command("explorer.exe", "D:\\grapper\\").Run()
 	}
+	//////////////////////////////////////////////////////////////////////////////
 }
 
 func move_stuff(dir string) {
@@ -132,45 +158,44 @@ func move_stuff(dir string) {
 		if e.IsDir() {
 			continue
 		}
-		dwall := filepath.Join(dir, "wall")
-		dother := filepath.Join(dir, "other")
-		dsquare := filepath.Join(dir, "square")
-		dbadquality := filepath.Join(dir, "bad_quality")
-		dbadqualitylandscape := filepath.Join(dbadquality, "l")
-		dbadqualitysquare := filepath.Join(dbadquality, "s")
-		dbadqualityportrait := filepath.Join(dbadquality, "p")
-		dvideo := filepath.Join(dir, "video")
-		dests := []string{
-			dwall,
-			dother,
-			dsquare,
-			dbadquality,
-			dvideo,
+		dwall_______________ := filepath.Join(dir, "wall")
+		dother______________ := filepath.Join(dir, "other")
+		dsquare_____________ := filepath.Join(dir, "square")
+		dbadquality_________ := filepath.Join(dir, "bad_quality")
+		dbadqualitylandscape := filepath.Join(dbadquality_________, "l")
+		dbadqualitysquare___ := filepath.Join(dbadquality_________, "s")
+		dbadqualityportrait_ := filepath.Join(dbadquality_________, "p")
+		dvideo______________ := filepath.Join(dir, "video")
+		Destinations := []string{
+			dwall_______________,
+			dother______________,
+			dsquare_____________,
+			dbadquality_________,
+			dvideo______________,
 			dbadqualitylandscape,
-			dbadqualitysquare,
-			dbadqualityportrait,
+			dbadqualitysquare___,
+			dbadqualityportrait_,
 		}
-		do(dests)
-		checkThenMove(dir, filepath.Join(dir, e.Name()))
+		createDirectories(Destinations)
+		cMoveFile(filepath.Join(dir, e.Name()), Destinations)
 	}
 }
 
-func checkThenMove(dir, path string) {
-	// change that so it doesnt do it every loop
-	dwall := filepath.Join(dir, "wall")
-	dother := filepath.Join(dir, "other")
-	dsquare := filepath.Join(dir, "square")
-	dbadquality := filepath.Join(dir, "bad_quality")
-	dbadqualitylandscape := filepath.Join(dbadquality, "l")
-	dbadqualitysquare := filepath.Join(dbadquality, "s")
-	dbadqualityportrait := filepath.Join(dbadquality, "p")
-	dvideo := filepath.Join(dir, "video")
+func cMoveFile(path string, dests []string) {
+	d_wall := dests[0]
+	d_other := dests[1]
+	d_square := dests[2]
+	d_badquality := dests[3]
+	d_video := dests[4]
+	d_landscape_badquality := dests[5]
+	d_square_badquality := dests[6]
+	d_portrait_badquality := dests[7]
 
 	ext := filepath.Ext(path)
 	var _ string = string(ext)
 
 	if ext == ".mp4" {
-		moveFile(path, dvideo, "yellow", "video")
+		moveFiles(path, d_video, "yellow", "video")
 	} else {
 		file, err := os.Open(path)
 		if err != nil {
@@ -189,39 +214,39 @@ func checkThenMove(dir, path string) {
 
 		if w >= 1080 && h >= 1080 {
 			if ar > 1 {
-				moveFile(path, dwall, "red", "land")
+				moveFiles(path, d_wall, "red", "land")
 			} else if ar == 1 {
-				moveFile(path, dsquare, "blue", "square")
+				moveFiles(path, d_square, "blue", "square")
 			} else if ar < 1 {
-				moveFile(path, dother, "green", "portrait")
+				moveFiles(path, d_other, "green", "portrait")
 			}
 		} else {
 			if ar > 1 {
-				moveFile(path, dbadqualitylandscape, "cyan", "land")
+				moveFiles(path, d_landscape_badquality, "cyan", "land")
 			} else if ar == 1 {
-				moveFile(path, dbadqualitysquare, "magenta", "square")
+				moveFiles(path, d_square_badquality, "magenta", "square")
 			} else if ar < 1 {
-				moveFile(path, dbadqualityportrait, "purple", "portrait")
+				moveFiles(path, d_portrait_badquality, "purple", "portrait")
 			} else {
-				moveFile(path, dbadquality, "grey", "")
+				moveFiles(path, d_badquality, "grey", "")
 			}
 		}
 	}
 }
 
-func moveFile(source, dest, name, typoe string) error {
+func moveFiles(source, dest, name, special_char string) error {
 	Count++
-	fileName := filepath.Base(source)
-	destpath := filepath.Join(dest, fileName)
+	f_name := filepath.Base(source)
+	d_path := filepath.Join(dest, f_name)
 
-	err := os.Rename(source, destpath)
+	err := os.Rename(source, d_path)
 	if err != nil {
 		Failed++
 		errormaxxing(err.Error())
 		return err
 	} else {
 		Succeed++
-		logmaxxing(source, dest, name, typoe)
+		logmaxxing(source, dest, name, special_char)
 		return nil
 	}
 
@@ -229,13 +254,17 @@ func moveFile(source, dest, name, typoe string) error {
 
 func logmaxxing(source, file_path, name, typoe string) {
 	c := colors[name]
-	special := specia[typoe]
+	special := special_char[typoe]
+
+	if count, ok := countTypes[typoe]; ok {
+		*count++
+	}
 
 	tab := "\t"
 	parentDir := filepath.Join(filepath.Base(filepath.Dir(source)), filepath.Base(source))
 	padpar := fmt.Sprintf("%-80s", parentDir)
 
-	println(tab, c, special, tab, padpar, "<><><><><>", tab, file_path, res)
+	println(tab, c, special, tab, padpar, "|=><=|", tab, file_path, reset_white)
 }
 
 func get_folders(path string) []string {
@@ -253,7 +282,7 @@ func get_folders(path string) []string {
 	return subdir
 }
 
-func do(destinationsFolders []string) {
+func createDirectories(destinationsFolders []string) {
 	for _, s := range destinationsFolders {
 		err := os.MkdirAll(s, 0755)
 		if err != nil {
@@ -262,37 +291,6 @@ func do(destinationsFolders []string) {
 			//return
 		}
 	}
-}
-
-func countFiles(path string) uint {
-	var nFiles uint
-	var size float64
-	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.IsDir() {
-			nFiles++
-			size += getFileSize(path)
-			if nFiles%100 == 0 {
-				fmt.Printf("%d\t%.1f\n", nFiles, size)
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		println("error counting")
-		return 0
-	}
-	return nFiles
-}
-
-func getFileSize(filename string) float64 {
-	fileInfo, err := os.Stat(filename)
-	if err != nil {
-		return 0
-	}
-	return float64(fileInfo.Size()) / (1024 * 1024 * 1024)
 }
 
 func errormaxxing(str string) {
@@ -323,7 +321,22 @@ func scramble(path string) {
 	}
 }
 
-func trackTime() func() {
+func removeTmp(path string) {
+	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() && filepath.Ext(path) == ".tmp" {
+			os.Remove(path)
+		}
+		return nil
+	})
+	if err != nil {
+		log.Fatal("error walking over eggs")
+	}
+}
+
+func timeminmaxxing() func() {
 	start := time.Now()
 	return func() {
 		log.Printf("Elapsed : %s", time.Since(start))
