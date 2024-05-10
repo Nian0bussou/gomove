@@ -47,9 +47,12 @@ subdir/
 
 ---
 
+for my convenience, it will also open the File Explorer if it is running on Windows
+
+---
+
 # Usage
 
---- 
 
 `go run main.go <optional : choice> <optional : path> `
 
