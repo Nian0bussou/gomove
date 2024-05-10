@@ -63,20 +63,6 @@ var (
 func main() {
 	defer timeminmaxxing()()
 
-	//////////////////////////////////////////////////////////////////////////////
-	// determining what wheter to scramble or to mangle
-
-	if len(os.Args) > 1 {
-		switch os.Args[1] {
-		case "1":
-			Choice = 1
-		default:
-			log.Fatal("invalid option")
-		}
-	} else {
-		Choice = 0
-	}
-
 	/////////////////////////////////////////////////////////////////////////////
 	// tak youw path & get the wuck out
 
@@ -88,6 +74,28 @@ func main() {
 	}
 	if _, err := os.Stat(path); err != nil {
 		println("dir not exist")
+	}
+	//////////////////////////////////////////////////////////////////////////////
+	// determining what wheter to scramble or to mangle
+
+	Choice = 0
+	if len(os.Args) == 2 {
+		switch os.Args[1] {
+		case "1":
+			Choice = 1
+		default:
+			log.Fatal("invalid option")
+		}
+	} else if len(os.Args) == 3 {
+		switch os.Args[1] {
+		case "0":
+			Choice = 0
+		case "1":
+			Choice = 1
+		default:
+			log.Fatal("invalid option")
+		}
+		path = os.Args[2]
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
