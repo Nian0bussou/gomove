@@ -45,6 +45,28 @@ subdir/
 
 └── wall
 
+---
+
+# Usage
+
+--- 
+
+`go run main.go <optional : choice> <optional : path> `
+
+
+only using `go run main.go`
+
+use the defaults
+
+choice ; 0 : organize the files
+
+choice ; 1 : scramble the files into their respecting root subdirectory 
+
+if the path is specified, it will use it as the root dir (where all the subdirs are located)
+
+however **NO VERIFICATION IS DONE**, make sure the path is correct
+
+
 
 (the structure of the directories in this README were made using the 'tree' package)
 
