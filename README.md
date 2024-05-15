@@ -1,6 +1,5 @@
 
-# gomove
-
+# GoMove
 
 ---
 
@@ -68,7 +67,7 @@ choice ; 1 : scramble the files into their respecting root subdirectory
 
 if the path is specified, it will use it as the root dir (where all the subdirs are located)
 
-however **NO VERIFICATION IS DONE**, make sure the path is correct
+however **NO VERIFICATION IS DONE** (and by that I mean that it will just exit if it cant find any available directories), make sure the path is correct
 
 
 
