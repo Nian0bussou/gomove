@@ -76,6 +76,7 @@ func main() {
 	if _, err := os.Stat(path); err != nil {
 		println("dir not exist")
 	}
+
 	//////////////////////////////////////////////////////////////////////////////
 	// determining what wheter to scramble or to mangle
 
@@ -296,8 +297,6 @@ func createDirectories(destinationsFolders []string) {
 		err := os.MkdirAll(s, 0755)
 		if err != nil {
 			log.Fatal("error making directories")
-			//println("error dir ", err)
-			//return
 		}
 	}
 }
