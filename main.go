@@ -81,6 +81,7 @@ func main() {
 	// determining what wheter to scramble or to mangle
 
 	Choice = 0
+
 	if len(os.Args) == 2 {
 		switch os.Args[1] {
 		case "1":
