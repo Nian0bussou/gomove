@@ -54,7 +54,9 @@ for my convenience, it will also open the File Explorer if it is running on Wind
 # Usage
 
 
-`go run main.go <optional : choice> <optional : path> `
+`go build` will build the binary file
+
+`gomove <optional : choice> <optional : path> `
 
 
 only using `go run main.go`
