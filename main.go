@@ -2,58 +2,17 @@ package main
 
 import (
 	"log"
-	"os"
 	"os/exec"
 	"runtime"
 	"sync"
-
-	"golang.org/x/term"
 )
 
 func main() {
 	defer timeminmaxxing()()
 
-	/////////////////////////////////////////////////////////////////////////////
-	// tak youw path & get the wuck out
-
-	osName := runtime.GOOS
-	path := "D:/grapper"
-
-	if osName == "linux" {
-		path = "/mnt/d/grapper/" // change this because fuck me
-		// log.Fatal("This dir : \"", path, "\" is invalid")
-	}
-	if _, err := os.Stat(path); err != nil {
-		println("dir not exist")
-	}
-
-	//////////////////////////////////////////////////////////////////////////////
-	// determining what wheter to scramble or to mangle
-
-	Choice = 0
-
-	if len(os.Args) == 2 {
-		switch os.Args[1] {
-		case "1":
-			Choice = 1
-		default:
-			log.Fatal("invalid option")
-		}
-	} else if len(os.Args) == 3 {
-		switch os.Args[1] {
-		case "0":
-			Choice = 0
-		case "1":
-			Choice = 1
-		default:
-			log.Fatal("invalid option")
-		}
-		path = os.Args[2]
-	}
-
-	/////////////////////////////////////////////////////////////////////////////
-	// get the fowdews
-
+	path := get_path()
+	var Choice int
+	Choice, path = get_choice(path)
 	subs := get_folders(path)
 	if subs == nil {
 		println("could not get directories")
@@ -63,16 +22,9 @@ func main() {
 		println(f)
 	}
 
+	line_print()
+
 	//////////////////////////////////////////////////////////////////////////////
-
-	width, _, _ := term.GetSize(0)
-	for i := 0; i < width; i++ {
-		print("_")
-	}
-	println()
-
-	/////////////////////////////////////////////////////////////////////////////
-
 	var wg sync.WaitGroup
 	for _, item := range subs {
 		wg.Add(1)
@@ -80,21 +32,20 @@ func main() {
 			defer wg.Done()
 			switch Choice {
 			case 0:
-				move_stuff(item)
+				move_wrapper(item)
 			case 1:
 				scramble(item)
 			default:
-				log.Fatal("invalid option in choice... somehow")
+				log.Fatal("invalid option")
 			}
 		}(item)
 	}
 	wg.Wait()
-
 	//////////////////////////////////////////////////////////////////////////////
 
-	for i := 0; i < width; i++ {
-		print("_")
-	}
+	removeTmp(path)
+	line_print()
+
 	println("Finished,")
 	println("count     : ", Count)
 	println("succeeded : ", Succeed)
@@ -104,10 +55,8 @@ func main() {
 	println("square    : ", Square___count)
 	println("video     : ", Video____count)
 
-	removeTmp(path)
-
 	///////////////////////////////////////////////////////////////////////////////
-	if osName == "windows" {
+	if runtime.GOOS == "windows" {
 		exec.Command("explorer.exe", "D:\\grapper\\").Run()
 	}
 	//////////////////////////////////////////////////////////////////////////////

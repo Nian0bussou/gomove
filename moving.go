@@ -10,86 +10,90 @@ import (
 	"path/filepath"
 )
 
-func move_stuff(dir string) {
+var (
+	dwall                string
+	dother               string
+	dsquare              string
+	dbadquality          string
+	dbadqualitylandscape string
+	dbadqualitysquare    string
+	dbadqualityportrait  string
+	dvideo               string
+)
+
+func move_wrapper(dir string) {
 	entries, _ := os.ReadDir(dir)
 	for _, e := range entries {
 		if e.IsDir() {
 			continue
 		}
-		dwall_______________ := filepath.Join(dir, "wall")
-		dother______________ := filepath.Join(dir, "other")
-		dsquare_____________ := filepath.Join(dir, "square")
-		dbadquality_________ := filepath.Join(dir, "bad_quality")
-		dbadqualitylandscape := filepath.Join(dbadquality_________, "l")
-		dbadqualitysquare___ := filepath.Join(dbadquality_________, "s")
-		dbadqualityportrait_ := filepath.Join(dbadquality_________, "p")
-		dvideo______________ := filepath.Join(dir, "video")
+		dwall = filepath.Join(dir, "wall")
+		dother = filepath.Join(dir, "other")
+		dsquare = filepath.Join(dir, "square")
+		dbadquality = filepath.Join(dir, "bad_quality")
+		dbadqualitylandscape = filepath.Join(dbadquality, "l")
+		dbadqualitysquare = filepath.Join(dbadquality, "s")
+		dbadqualityportrait = filepath.Join(dbadquality, "p")
+		dvideo = filepath.Join(dir, "video")
 		Destinations := []string{
-			dwall_______________,
-			dother______________,
-			dsquare_____________,
-			dbadquality_________,
-			dvideo______________,
+			dwall,
+			dother,
+			dsquare,
+			dbadquality,
+			dvideo,
 			dbadqualitylandscape,
-			dbadqualitysquare___,
-			dbadqualityportrait_,
+			dbadqualitysquare,
+			dbadqualityportrait,
 		}
 		createDirectories(Destinations)
-		cMoveFile(filepath.Join(dir, e.Name()), Destinations)
+		move_file(filepath.Join(dir, e.Name()))
 	}
 }
 
-func cMoveFile(path string, dests []string) {
-	d_wall := dests[0]
-	d_other := dests[1]
-	d_square := dests[2]
-	d_badquality := dests[3]
-	d_video := dests[4]
-	d_landscape_badquality := dests[5]
-	d_square_badquality := dests[6]
-	d_portrait_badquality := dests[7]
+func move_file(path string) {
 
 	ext := filepath.Ext(path)
-	var _ string = string(ext)
+	var _ string = string(ext) // not work otherwise
 
 	if ext == ".mp4" {
-		moveFiles(path, d_video, "yellow", "video")
+		moveFiles(path, dvideo, "yellow", "video")
+		return
+	}
+	file, err := os.Open(path)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+	m, _, e := image.Decode(file)
+	if e != nil {
+		return
+	}
+
+	b := m.Bounds()
+	w := b.Dx()
+	h := b.Dy()
+	ar := float32(w) / float32(h)
+
+	if w >= 1080 && h >= 1080 {
+		if ar > 1 {
+			moveFiles(path, dwall, "red", "land")
+		} else if ar == 1 {
+			moveFiles(path, dsquare, "blue", "square")
+		} else if ar < 1 {
+			moveFiles(path, dother, "green", "portrait")
+		}
 	} else {
-		file, err := os.Open(path)
-		if err != nil {
-			return
-		}
-		defer file.Close()
-		m, _, e := image.Decode(file)
-		if e != nil {
-			return
-		}
-
-		b := m.Bounds()
-		w := b.Dx()
-		h := b.Dy()
-		ar := float32(w) / float32(h)
-
-		if w >= 1080 && h >= 1080 {
-			if ar > 1 {
-				moveFiles(path, d_wall, "red", "land")
-			} else if ar == 1 {
-				moveFiles(path, d_square, "blue", "square")
-			} else if ar < 1 {
-				moveFiles(path, d_other, "green", "portrait")
-			}
+		if ar > 1 {
+			moveFiles(path, dbadqualitylandscape, "cyan", "land")
+		} else if ar == 1 {
+			moveFiles(path, dbadqualitysquare, "magenta", "square")
+		} else if ar < 1 {
+			moveFiles(path, dbadqualityportrait, "purple", "portrait")
 		} else {
-			if ar > 1 {
-				moveFiles(path, d_landscape_badquality, "cyan", "land")
-			} else if ar == 1 {
-				moveFiles(path, d_square_badquality, "magenta", "square")
-			} else if ar < 1 {
-				moveFiles(path, d_portrait_badquality, "purple", "portrait")
-			} else {
-				moveFiles(path, d_badquality, "grey", "")
-			}
+			moveFiles(path, dbadquality, "grey", "")
 		}
 	}
+
 }
 
 func moveFiles(source, dest, name, special_char string) error {
