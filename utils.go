@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"golang.org/x/term"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 	"time"
+
+	"golang.org/x/term"
 )
 
 func get_path() string {
@@ -29,6 +30,18 @@ func line_print() {
 	}
 	println()
 
+}
+
+func exit_message() {
+	line_print()
+	println("Finished,")
+	println("count     : ", Count)
+	println("succeeded : ", Succeed)
+	println("failed    : ", Failed)
+	println("portrait  : ", Portrait_count)
+	println("landscape : ", Landscape_count)
+	println("square    : ", Square___count)
+	println("video     : ", Video____count)
 }
 
 func get_choice(path string) (int, string) {

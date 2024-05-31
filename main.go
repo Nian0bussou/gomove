@@ -2,8 +2,6 @@ package main
 
 import (
 	"log"
-	"os/exec"
-	"runtime"
 	"sync"
 )
 
@@ -44,22 +42,6 @@ func main() {
 	//////////////////////////////////////////////////////////////////////////////
 
 	removeTmp(path)
-	line_print()
 
-	println("Finished,")
-	println("count     : ", Count)
-	println("succeeded : ", Succeed)
-	println("failed    : ", Failed)
-	println("portrait  : ", Portrait_count)
-	println("landscape : ", Landscape_count)
-	println("square    : ", Square___count)
-	println("video     : ", Video____count)
-
-	///////////////////////////////////////////////////////////////////////////////
-	if runtime.GOOS == "windows" {
-		exec.Command("explorer.exe", "D:\\grapper\\").Run()
-	}
-	//////////////////////////////////////////////////////////////////////////////
-
-	return
+	exit_message()
 }
